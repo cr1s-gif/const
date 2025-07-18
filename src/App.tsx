@@ -4,6 +4,7 @@ import { Presentation } from './components/Presentation';
 import { Carousel } from './components/Carousel';
 import { Information } from './components/Information';
 import { Footer } from './components/Footer';
+import HorizontalCarousel from './components/Carrusel';
 
 const App: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const App: React.FC = () => {
         <Presentation />
         <Carousel />
         <Information />
+        <HorizontalCarousel />
       </main>
       <Footer />
     </div>
