@@ -40,10 +40,10 @@ const HorizontalCarousel = () => {
     <>
       <section ref={sectionRef} className="relative h-screen overflow-hidden bg-black">
         <div ref={containerRef} className="flex h-full w-[400vw]">
-          <div className="w-screen h-full flex items-center justify-center bg-red-300 text-white text-4xl font-bold">Card 1</div>
+          <div className="w-screen h-full flex items-center justify-center bg-blue-300 text-white text-4xl font-bold">Card 1</div>
           <div className="w-screen h-full flex items-center justify-center bg-blue-300 text-white text-4xl font-bold">Card 2</div>
-          <div className="w-screen h-full flex items-center justify-center bg-green-300 text-white text-4xl font-bold">Card 3</div>
-          <div className="w-screen h-full flex items-center justify-center bg-yellow-300 text-white text-4xl font-bold">Card 4</div>
+          <div className="w-screen h-full flex items-center justify-center bg-blue-300 text-white text-4xl font-bold">Card 3</div>
+          <div className="w-screen h-full flex items-center justify-center bg-blue-300 text-white text-4xl font-bold">Card 4</div>
         </div>
       </section>
 
