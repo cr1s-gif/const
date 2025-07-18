@@ -12,31 +12,33 @@ const HorizontalCarousel = () => {
   useEffect(() => {
     const container = containerRef.current;
     const section = sectionRef.current;
-    
+  
     if (!container || !section) return;
-
+  
     const numPanels = container.children.length;
-    
+    const totalScroll = container.scrollWidth - window.innerWidth;
+  
     const ctx = gsap.context(() => {
       gsap.to(container, {
-        xPercent: -100 * (numPanels - 1),
+        x: -totalScroll,
         ease: "none",
         scrollTrigger: {
           trigger: section,
           pin: true,
           scrub: 1,
           snap: 1 / (numPanels - 1),
-          end: () => `+=${container.offsetWidth}`,
+          end: () => `+=${totalScroll}`,
         },
       });
     }, sectionRef);
-
+  
     return () => ctx.revert();
   }, []);
+  
 
   return (
     <>
-      <section ref={sectionRef} className="relative h-screen overflow-hidden bg-neutral-100">
+      <section ref={sectionRef} className="relative h-screen overflow-hidden bg-black">
         <div ref={containerRef} className="flex h-full w-[400vw]">
           <div className="w-screen h-full flex items-center justify-center bg-red-300 text-white text-4xl font-bold">Card 1</div>
           <div className="w-screen h-full flex items-center justify-center bg-blue-300 text-white text-4xl font-bold">Card 2</div>

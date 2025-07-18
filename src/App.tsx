@@ -11,8 +11,8 @@ const App: React.FC = () => {
       <Navbar />
       <main className="flex-grow">
         <Presentation />
-        <Information />
         <HorizontalCarousel />
+        <Information />
       </main>
       <Footer />
     </div>
