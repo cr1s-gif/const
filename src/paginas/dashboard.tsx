@@ -19,7 +19,7 @@ const Navbar = () => {
             <a href="#" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
               Reports
             </a>
-            <a href="#" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            <a href="/" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
               Settings
             </a>
           </div>
@@ -112,6 +112,7 @@ const MainContent = () => {
               <p className="text-default-500 text-center">
                 This is a sample square card content.
               </p>
+              <a href="/questioncontainer">ir a quiz</a>
             </CardBody>
           </Card>
         ))}
