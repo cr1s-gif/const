@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Card, CardBody, CardHeader, RadioGroup, Radio, Tooltip } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import '/home/cr1s-gif/const/src/index.css';
 
 // Types
 interface Question {
