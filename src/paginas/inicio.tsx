@@ -47,9 +47,9 @@ const Presentation = () => {
         <p className='text-xl m-8 max-w-2xl mx-auto text-center cherry-font text-5xl'>
           We help businesses create stunning landing pages that convert visitors into customers.
         </p>
-        <button className="absolute bottom-20 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-lg">
+        <a href='/dashboard' className="absolute bottom-20 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-lg">
           Learn More
-        </button>
+        </a>
       </div>
     </section>
   );
