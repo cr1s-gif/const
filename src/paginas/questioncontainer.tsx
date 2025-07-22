@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, Card, CardBody, CardHeader, RadioGroup, Radio, Tooltip, Progress } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -9,6 +9,15 @@ interface Question {
   options: string[];
   correctAnswer: string;
   hint: string;
+}
+
+interface QuizResult {
+  question: string;
+  correctAnswer: string;
+  userAnswer: string;
+  explanation: string;
+  options?: string[];
+  hint?: string;
 }
 
 // Questions Data por tema
@@ -108,16 +117,32 @@ const questionsByTopic: Record<string, Question[]> = {
       correctAnswer: "Número de filas linealmente independientes",
       hint: "El rango es la dimensión del espacio generado por sus filas o columnas.",
     }
-  ],
-  // Otros temas...
+  ]
 };
 
-// Resultados del quiz
-interface QuizResult {
-  totalQuestions: number;
-  correctAnswers: number;
-  score: number;
-}
+const explanationsByTopic: Record<string, Record<string, string>> = {
+  inecuaciones: {
+    "x > 4": "Para resolver x + 3 > 7, restamos 3 a ambos lados: x > 7 - 3 → x > 4",
+    "x ≤ 4": "Para resolver 2x - 5 ≤ 3: 1) Sumamos 5: 2x ≤ 8, 2) Dividimos por 2: x ≤ 4",
+    "x < 2 o x > 3": "Factorizamos x² - 5x + 6 = (x-2)(x-3) > 0. Solución: x < 2 o x > 3",
+    "-2 < x < 8": "La desigualdad |x - 3| < 5 equivale a -5 < x - 3 < 5 → -2 < x < 8",
+    "x ≤ -2 o x ≥ 1": "Los puntos críticos son x = -2 y x = 1. Probando intervalos: solución x ≤ -2 o x ≥ 1"
+  },
+  derivadas: {
+    "2x": "La derivada de x² es 2x por la regla de la potencia: d/dx(xⁿ) = n·xⁿ⁻¹",
+    "cos(x)": "La derivada de sin(x) es cos(x), una de las derivadas trigonométricas básicas",
+    "1/x": "La derivada de ln(x) es 1/x, una de las derivadas logarítmicas fundamentales",
+    "eˣ(cos(x) - sin(x))": "Aplicamos la regla del producto: d/dx(eˣcos(x)) = eˣcos(x) - eˣsin(x) = eˣ(cos(x) - sin(x))",
+    "-x/y": "Derivando implícitamente: 2y dy/dx + 2x = 0 → dy/dx = -2x/(2y) = -x/y"
+  },
+  matrices: {
+    "[[6,8],[10,12]]": "Suma elemento por elemento: 1+5=6, 2+6=8, 3+7=10, 4+8=12",
+    "ad - bc": "El determinante de [[a,b],[c,d]] se calcula como ad - bc",
+    "Multiplicación": "Para multiplicar matrices A×B, el número de columnas de A debe igualar filas de B",
+    "[[-2,1],[1.5,-0.5]]": "Inversa de [[a,b],[c,d]] es (1/det)[[d,-b],[-c,a]]. Aquí det = -2",
+    "Número de filas linealmente independientes": "El rango es la dimensión del espacio generado por las filas/columnas"
+  }
+};
 
 // Navbar Component
 const Navbar = () => {
@@ -128,22 +153,6 @@ const Navbar = () => {
           <div className="flex-shrink-0 flex items-center">
             <Icon icon="lucide:layout" className="h-6 w-6 text-blue-500 mr-2" />
             <span className="font-bold text-xl">LearningHub</span>
-          </div>
-          <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-            <a href="#" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-              Inicio
-            </a>
-            <a href="#" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-              Progreso
-            </a>
-            <a href="#" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-              Perfil
-            </a>
-          </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Mi cuenta
-            </button>
           </div>
         </div>
       </div>
@@ -283,59 +292,13 @@ const QuizControls: React.FC<{
   );
 };
 
-// Results Component
-const Results: React.FC<{
-  result: QuizResult;
-  onRestart: () => void;
-  onReturnToDashboard: () => void;
-}> = ({ result, onRestart, onReturnToDashboard }) => {
-  return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold mb-4">Resultados del Quiz</h2>
-        <Progress 
-          size="lg" 
-          value={result.score} 
-          color="success" 
-          className="max-w-md mb-4"
-        />
-        <p className="text-lg mb-2">
-          Respuestas correctas: <span className="font-bold">{result.correctAnswers}/{result.totalQuestions}</span>
-        </p>
-        <p className="text-2xl font-bold text-success">
-          Puntuación: {result.score}%
-        </p>
-      </div>
-      <div className="flex gap-4 mt-4">
-        <Button 
-          color="primary" 
-          variant="solid" 
-          onPress={onRestart}
-          startContent={<Icon icon="lucide:rotate-ccw" />}
-        >
-          Reintentar Quiz
-        </Button>
-        <Button 
-          color="default" 
-          variant="flat" 
-          onPress={onReturnToDashboard}
-          startContent={<Icon icon="lucide:layout-dashboard" />}
-        >
-          Volver al Dashboard
-        </Button>
-      </div>
-    </div>
-  );
-};
-
 // Custom Hook
-const useQuizState = (questions: Question[]) => {
+const useQuizState = (questions: Question[], topic: string) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [showResults, setShowResults] = useState(false);
-  const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+  const navigate = useNavigate();
 
   const handleNextQuestion = () => {
     if (selectedAnswer) {
@@ -343,8 +306,10 @@ const useQuizState = (questions: Question[]) => {
       
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(answers[currentQuestion + 1] || null);
+        setSelectedAnswer(null);
         setShowHint(false);
+      } else {
+        finishQuiz();
       }
     }
   };
@@ -366,41 +331,27 @@ const useQuizState = (questions: Question[]) => {
   const toggleHint = () => setShowHint(!showHint);
 
   const finishQuiz = () => {
-    if (selectedAnswer) {
-      setAnswers(prev => ({ ...prev, [currentQuestion]: selectedAnswer }));
-    }
-    
-    let correct = 0;
-    questions.forEach((q, index) => {
-      if (answers[index] === q.correctAnswer) {
-        correct++;
-      }
-    });
+    const quizResults: QuizResult[] = questions.map((q, index) => ({
+      question: q.question,
+      correctAnswer: q.correctAnswer,
+      userAnswer: answers[index] || "No respondida",
+      explanation: explanationsByTopic[topic]?.[q.correctAnswer] || "Explicación no disponible",
+      options: q.options,
+      hint: q.hint
+    }));
 
-    const score = Math.round((correct / questions.length) * 100);
-    setQuizResult({
-      totalQuestions: questions.length,
-      correctAnswers: correct,
-      score
+    navigate('/resultados', { 
+      state: { 
+        results: quizResults,
+        topic: topic
+      } 
     });
-    setShowResults(true);
-  };
-
-  const restartQuiz = () => {
-    setCurrentQuestion(0);
-    setSelectedAnswer(null);
-    setShowHint(false);
-    setAnswers({});
-    setShowResults(false);
-    setQuizResult(null);
   };
 
   return {
     currentQuestion,
     selectedAnswer,
     showHint,
-    showResults,
-    quizResult,
     answers,
     handleNextQuestion,
     handlePreviousQuestion,
@@ -408,7 +359,6 @@ const useQuizState = (questions: Question[]) => {
     setSelectedAnswer,
     toggleHint,
     finishQuiz,
-    restartQuiz,
   };
 };
 
@@ -417,14 +367,11 @@ const QuizContainer: React.FC = () => {
   const [searchParams] = useSearchParams();
   const topic = searchParams.get('topic') || 'inecuaciones';
   const questions = questionsByTopic[topic] || questionsByTopic.inecuaciones;
-  const navigate = useNavigate();
 
   const {
     currentQuestion,
     selectedAnswer,
     showHint,
-    showResults,
-    quizResult,
     answers,
     handleNextQuestion,
     handlePreviousQuestion,
@@ -432,19 +379,12 @@ const QuizContainer: React.FC = () => {
     setSelectedAnswer,
     toggleHint,
     finishQuiz,
-    restartQuiz,
-  } = useQuizState(questions);
+  } = useQuizState(questions, topic);
 
-  const returnToDashboard = () => {
-    navigate('/dashboard');
-  };
-
-  // Establecer título del quiz basado en el tema
   const quizTitles: Record<string, string> = {
     inecuaciones: "Inecuaciones",
     derivadas: "Derivadas",
     matrices: "Matrices",
-    // Agrega más títulos según los temas
   };
 
   const quizTitle = quizTitles[topic] || topic;
@@ -456,44 +396,30 @@ const QuizContainer: React.FC = () => {
         <Card className="w-full max-w-3xl shadow-lg">
           <CardHeader className="flex flex-col gap-4">
             <h1 className="text-2xl font-bold text-center">Quiz de {quizTitle}</h1>
-            {!showResults && (
-              <QuestionNavigation
-                questions={questions}
-                currentQuestion={currentQuestion}
-                onQuestionSelect={handleQuestionSelect}
-                answers={answers}
-              />
-            )}
+            <QuestionNavigation
+              questions={questions}
+              currentQuestion={currentQuestion}
+              onQuestionSelect={handleQuestionSelect}
+              answers={answers}
+            />
           </CardHeader>
           <CardBody className="flex flex-col gap-6">
-            {!showResults ? (
-              <>
-                <QuizQuestion
-                  question={questions[currentQuestion]}
-                  selectedAnswer={selectedAnswer}
-                  setSelectedAnswer={setSelectedAnswer}
-                  showHint={showHint}
-                />
-                <QuizControls
-                  currentQuestion={currentQuestion}
-                  totalQuestions={questions.length}
-                  showHint={showHint}
-                  selectedAnswer={selectedAnswer}
-                  onPreviousQuestion={handlePreviousQuestion}
-                  onNextQuestion={handleNextQuestion}
-                  onToggleHint={toggleHint}
-                  onFinishQuiz={finishQuiz}
-                />
-              </>
-            ) : (
-              quizResult && (
-                <Results
-                  result={quizResult}
-                  onRestart={restartQuiz}
-                  onReturnToDashboard={returnToDashboard}
-                />
-              )
-            )}
+            <QuizQuestion
+              question={questions[currentQuestion]}
+              selectedAnswer={selectedAnswer}
+              setSelectedAnswer={setSelectedAnswer}
+              showHint={showHint}
+            />
+            <QuizControls
+              currentQuestion={currentQuestion}
+              totalQuestions={questions.length}
+              showHint={showHint}
+              selectedAnswer={selectedAnswer}
+              onPreviousQuestion={handlePreviousQuestion}
+              onNextQuestion={handleNextQuestion}
+              onToggleHint={toggleHint}
+              onFinishQuiz={finishQuiz}
+            />
           </CardBody>
         </Card>
       </div>
