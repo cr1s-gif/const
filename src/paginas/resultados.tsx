@@ -193,7 +193,7 @@ const QuizResultsPage: React.FC = () => {
 };
 
 // Main App Component
-const App: React.FC = () => {
+const Resultados: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
 
   return (
@@ -212,4 +212,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default Resultados;

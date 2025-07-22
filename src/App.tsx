@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './paginas/inicio';
 import DashboardPage from './paginas/dashboard';
 import QuizContainer from './paginas/questioncontainer';
+import Resultados from './paginas/resultados';
 
 const App: React.FC = () => {
   return (
@@ -11,6 +12,7 @@ const App: React.FC = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path='/questioncontainer' element={<QuizContainer />} />
+        <Route path='/resultado' element={<Resultados/>}/>
       </Routes>
     </Router>
   );
