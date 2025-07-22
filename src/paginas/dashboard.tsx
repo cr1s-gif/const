@@ -1,21 +1,41 @@
 import React, { ReactNode, useState } from "react";
 import { Icon } from "@iconify/react";
-import { Button, Card, CardBody } from "@heroui/react";
+import { 
+  Button, 
+  Card, 
+  CardBody, 
+  Modal, 
+  ModalContent, 
+  ModalHeader, 
+  ModalBody, 
+  ModalFooter
+} from "@heroui/react";
 import { useNavigate } from "react-router-dom";
+
+// Implementación alternativa de useDisclosure
+const useDisclosure = (initialState = false) => {
+  const [isOpen, setIsOpen] = useState(initialState);
+
+  const onOpen = () => setIsOpen(true);
+  const onClose = () => setIsOpen(false);
+  const onToggle = () => setIsOpen(!isOpen);
+
+  return { isOpen, onOpen, onClose, onToggle };
+};
 
 // Definición de tipos TypeScript
 type ModalOption = {
   id: string;
   title: string;
-  content: string;
+  quizTopic: string;
+  description: string;
 };
 
 type CardOption = {
   id: string;
   title: string;
   description: string;
-  modals?: ModalOption[];
-  quizTopic?: string;
+  modalOptions: ModalOption[];
 };
 
 type SidebarOption = {
@@ -34,83 +54,78 @@ const dashboardData: DashboardData = {
   sidebarOptions: [
     {
       id: "calculo",
-      name: "Calculo",
+      name: "Cálculo",
       icon: "lucide:home",
       cards: [
-        {
-          id: "inecuaciones",
-          title: "Inecuaciones",
-          description: "Ejercicios de inecuaciones",
-          quizTopic: "inecuaciones"
-        },
         {
           id: "derivadas",
           title: "Derivadas",
           description: "Ejercicios de derivadas",
-          quizTopic: "derivadas"
+          modalOptions: [
+            {
+              id: "derivadas-basicas",
+              title: "Derivadas Básicas",
+              quizTopic: "derivadas-basicas",
+              description: "Derivadas de funciones elementales"
+            },
+            {
+              id: "derivadas-implicitas",
+              title: "Derivadas Implícitas",
+              quizTopic: "derivadas-implicitas",
+              description: "Derivación implícita de funciones"
+            },
+            {
+              id: "regla-cadena",
+              title: "Regla de la Cadena",
+              quizTopic: "regla-cadena",
+              description: "Derivadas compuestas usando regla de la cadena"
+            }
+          ]
         },
         {
           id: "integrales",
           title: "Integrales",
           description: "Ejercicios de integrales",
-          quizTopic: "integrales"
+          modalOptions: [
+            {
+              id: "integrales-indefinidas",
+              title: "Integrales Indefinidas",
+              quizTopic: "integrales-indefinidas",
+              description: "Integrales básicas y métodos de integración"
+            },
+            {
+              id: "integrales-definidas",
+              title: "Integrales Definidas",
+              quizTopic: "integrales-definidas",
+              description: "Cálculo de áreas bajo la curva"
+            }
+          ]
         }
       ]
     },
     {
       id: "algebra",
-      name: "Algebra",
+      name: "Álgebra",
       icon: "lucide:bar-chart",
       cards: [
         {
           id: "matrices",
           title: "Matrices",
           description: "Ejercicios de matrices",
-          quizTopic: "matrices"
-        },
-        {
-          id: "vectores",
-          title: "Vectores",
-          description: "Ejercicios de vectores",
-          quizTopic: "vectores"
-        }
-      ]
-    },
-    {
-      id: "fisica",
-      name: "Fisica",
-      icon: "lucide:users",
-      cards: [
-        {
-          id: "cinematica",
-          title: "Cinemática",
-          description: "Ejercicios de cinemática",
-          quizTopic: "cinematica"
-        },
-        {
-          id: "dinamica",
-          title: "Dinámica",
-          description: "Ejercicios de dinámica",
-          quizTopic: "dinamica"
-        }
-      ]
-    },
-    {
-      id: "programacion",
-      name: "Programacion",
-      icon: "lucide:settings",
-      cards: [
-        {
-          id: "react",
-          title: "React",
-          description: "Ejercicios de React",
-          quizTopic: "react"
-        },
-        {
-          id: "typescript",
-          title: "TypeScript",
-          description: "Ejercicios de TypeScript",
-          quizTopic: "typescript"
+          modalOptions: [
+            {
+              id: "operaciones-matrices",
+              title: "Operaciones con Matrices",
+              quizTopic: "operaciones-matrices",
+              description: "Suma, resta y multiplicación de matrices"
+            },
+            {
+              id: "determinantes",
+              title: "Determinantes",
+              quizTopic: "determinantes",
+              description: "Cálculo de determinantes y propiedades"
+            }
+          ]
         }
       ]
     }
@@ -188,34 +203,67 @@ const Sidebar = ({ options, selectedOption, setSelectedOption }: {
   );
 };
 
-// Componente CardWithQuiz
-const CardWithQuiz = ({ card }: { card: CardOption }) => {
+// Componente CardWithModal
+const CardWithModal = ({ card }: { card: CardOption }) => {
   const navigate = useNavigate();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const handleQuizClick = () => {
-    if (card.quizTopic) {
-      navigate(`/quizcontainer?topic=${card.quizTopic}`);
-    }
+  const handleOptionSelect = (quizTopic: string) => {
+    onClose();
+    navigate(`/quizcontainer?topic=${quizTopic}`);
   };
 
   return (
-    <Card className="w-full aspect-square" isHoverable>
-      <CardBody className="flex flex-col justify-center items-center p-6">
-        <h2 className="text-lg font-semibold mb-2">{card.title}</h2>
-        <p className="text-default-500 text-center mb-4">
-          {card.description}
-        </p>
-        {card.quizTopic && (
-          <Button 
-            color="primary" 
-            onPress={handleQuizClick}
-            className="mt-4"
-          >
-            Iniciar Quiz
+    <>
+      <Card 
+        className="w-full aspect-square" 
+        isHoverable
+        isPressable
+        onPress={onOpen}
+      >
+        <CardBody className="flex flex-col justify-center items-center p-6">
+          <h2 className="text-lg font-semibold mb-2">{card.title}</h2>
+          <p className="text-default-500 text-center mb-4">
+            {card.description}
+          </p>
+          <Button color="primary" className="mt-4">
+            Ver opciones
           </Button>
-        )}
-      </CardBody>
-    </Card>
+        </CardBody>
+      </Card>
+
+      <Modal isOpen={isOpen} onClose={onClose} size="lg">
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1">
+            {card.title}
+            <p className="text-sm text-default-500">{card.description}</p>
+          </ModalHeader>
+          <ModalBody>
+            <div className="grid grid-cols-1 gap-4">
+              {card.modalOptions.map((option) => (
+                <Card 
+                  key={option.id}
+                  isHoverable
+                  isPressable
+                  onPress={() => handleOptionSelect(option.quizTopic)}
+                  className="hover:bg-content2 transition-colors"
+                >
+                  <CardBody>
+                    <h3 className="font-semibold">{option.title}</h3>
+                    <p className="text-sm text-default-500">{option.description}</p>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="default" variant="light" onPress={onClose}>
+              Cerrar
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 
@@ -242,7 +290,7 @@ const MainContent = ({ selectedOption, options }: {
       {selectedOptionData ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {selectedOptionData.cards.map((card) => (
-            <CardWithQuiz key={card.id} card={card} />
+            <CardWithModal key={card.id} card={card} />
           ))}
         </div>
       ) : (
