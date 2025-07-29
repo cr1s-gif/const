@@ -164,12 +164,53 @@ const Navbar = () => {
   );
 };
 
-// Componente Sidebar
+
+// Componente Sidebar actualizado
 const Sidebar = ({ options, selectedOption, setSelectedOption }: {
   options: SidebarOption[];
   selectedOption: string | null;
   setSelectedOption: (id: string) => void;
 }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleCreateBasedOnFile = () => {
+    if (!selectedFile) return;
+    
+    setIsProcessing(true);
+    // Aquí iría la lógica para enviar el archivo a la IA y crear contenido basado en él
+    console.log("Creando contenido basado en:", selectedFile.name);
+    
+    // Simulación de procesamiento
+    setTimeout(() => {
+      setIsProcessing(false);
+      onClose();
+      alert(`Archivo procesado: Se creará contenido basado en ${selectedFile.name}`);
+    }, 1500);
+  };
+
+  const handleSolveFile = () => {
+    if (!selectedFile) return;
+    
+    setIsProcessing(true);
+    // Aquí iría la lógica para enviar el archivo a la IA y resolverlo
+    console.log("Resolviendo archivo:", selectedFile.name);
+    
+    // Simulación de procesamiento
+    setTimeout(() => {
+      setIsProcessing(false);
+      onClose();
+      alert(`Archivo procesado: Se resolverá el contenido de ${selectedFile.name}`);
+    }, 1500);
+  };
+
   return (
     <aside className="w-64 bg-content2 p-4 flex flex-col border-r border-default-200">
       <nav className="flex-1">
@@ -195,13 +236,84 @@ const Sidebar = ({ options, selectedOption, setSelectedOption }: {
           color="danger"
           startContent={<Icon icon="lucide:log-out" />}
           className="w-full justify-start"
+          onClick={onOpen}
         >
-          Cerrar sesión
+          Opciones de archivo
         </Button>
       </div>
+
+      {/* Modal para las opciones de archivo */}
+      <Modal isOpen={isOpen} onClose={onClose} size="lg">
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <Icon icon="lucide:file-text" className="text-danger" />
+              <span>Opciones de archivo</span>
+            </div>
+            <p className="text-sm text-default-500">
+              Sube un archivo PDF y elige una acción
+            </p>
+          </ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-default-200 rounded-lg p-4 text-center">
+                <input 
+                  type="file" 
+                  id="file-upload"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <label 
+                  htmlFor="file-upload" 
+                  className="cursor-pointer flex flex-col items-center justify-center gap-2"
+                >
+                  <Icon icon="lucide:upload" className="h-8 w-8 text-default-400" />
+                  <span className="font-medium">
+                    {selectedFile ? selectedFile.name : "Selecciona un archivo PDF"}
+                  </span>
+                  <span className="text-sm text-default-500">
+                    {selectedFile ? "Haz clic para cambiar" : "Arrastra o haz clic para subir"}
+                  </span>
+                </label>
+              </div>
+
+              {selectedFile && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Button 
+                    color="primary" 
+                    variant="solid" 
+                    onPress={handleCreateBasedOnFile}
+                    isLoading={isProcessing}
+                    startContent={<Icon icon="lucide:file-plus" />}
+                    className="h-full"
+                  >
+                    Crear contenido basado en el archivo
+                  </Button>
+                  <Button 
+                    color="success" 
+                    variant="solid" 
+                    onPress={handleSolveFile}
+                    isLoading={isProcessing}
+                    startContent={<Icon icon="lucide:file-check" />}
+                    className="h-full"
+                  >
+                    Resolver archivo
+                  </Button>
+                </div>
+              )}
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="default" variant="light" onPress={onClose}>
+              Cancelar
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </aside>
   );
-};
+};;
 
 // Componente CardWithModal
 const CardWithModal = ({ card }: { card: CardOption }) => {
