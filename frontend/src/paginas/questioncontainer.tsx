@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Card, CardBody, CardHeader, RadioGroup, Radio, Progress } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { generateMathQuestions as fetchQuestions } from '../services/apiService';
+import { checkAPIHealth, generateMathQuestions as fetchQuestions, generateMathQuestions } from '../services/apiService';
 
 // Definir la interfaz GeneratedQuestion
 export interface GeneratedQuestion {
@@ -217,34 +217,41 @@ const QuizContainer: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
 
-  useEffect(() => {
-    const loadQuestions = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Mostrar progreso de carga
-        const interval = setInterval(() => {
-          setProgress(prev => (prev < 90 ? prev + 10 : prev));
-        }, 1000);
-
-        // Llamada al backend para generar preguntas
-        const generatedQuestions = await fetchQuestions(topic, 5);
-        setQuestions(generatedQuestions);
-        
-        clearInterval(interval);
-        setProgress(100);
-      } catch (err) {
-        console.error("Error al generar preguntas:", err);
-        setError(`Error al generar preguntas: ${(err as Error).message}`);
-        setQuestions([]);
-      } finally {
-        setIsLoading(false);
+// En QuizContainer.tsx, dentro del useEffect principal
+useEffect(() => {
+  const loadQuestions = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Verificar primero que el backend esté disponible
+      const isHealthy = await checkAPIHealth();
+      if (!isHealthy) {
+        throw new Error('El servidor de preguntas no está disponible');
       }
-    };
-  
-    loadQuestions();
-  }, [topic]);
+
+      // Mostrar progreso de carga
+      const interval = setInterval(() => {
+        setProgress(prev => (prev < 90 ? prev + 10 : prev));
+      }, 1000);
+
+      // Llamada al backend para generar preguntas
+      const generatedQuestions = await generateMathQuestions(topic, 5);
+      setQuestions(generatedQuestions);
+      
+      clearInterval(interval);
+      setProgress(100);
+    } catch (err) {
+      console.error("Error al generar preguntas:", err);
+      setError(`Error al generar preguntas: ${(err as Error).message}`);
+      setQuestions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  loadQuestions();
+}, [topic]);
 
   const quizTitle = topic.split('-').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1)
